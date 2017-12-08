@@ -81,7 +81,7 @@ vi /etc/telegraf/telegraf.conf
 
 grafana：
 
-运行grafana，访问http://localhost:3000，选择导入Dashboard，导入的文件是项目中哦个的grafana/Spring Boot监控.json文件
+运行grafana，访问http://localhost:3000 ，选择导入Dashboard，导入的文件是项目中的grafana/Spring Boot监控.json文件
 
 ### 运行
 
