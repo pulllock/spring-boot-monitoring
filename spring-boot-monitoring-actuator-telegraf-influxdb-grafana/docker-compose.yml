@@ -1,0 +1,49 @@
+version: "3.8"
+
+# 定义网络：local_net
+networks:
+  local_net:
+    name: local_net
+
+# 定义服务
+services:
+  # influxdb服务
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - 8086:8086
+    networks:
+      - local_net
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=12345678
+      - DOCKER_INFLUXDB_INIT_ORG=cxis
+      - DOCKER_INFLUXDB_INIT_BUCKET=cxis-bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=12345678
+
+  # telegraf服务
+  telegraf:
+    image: telegraf:latest
+    networks:
+      - local_net
+    depends_on:
+      - influxdb
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  # grafana服务
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    networks:
+      - local_net
+
+  # 示例项目服务
+  spring-boot-monitoring-actuator-telegraf-influxdb-grafana:
+    image: local_test/spring-boot-monitoring-actuator-telegraf-influxdb-grafana:1.0.0-SNAPSHOT
+    ports:
+        - 8080:8080
+    networks:
+      - local_net
