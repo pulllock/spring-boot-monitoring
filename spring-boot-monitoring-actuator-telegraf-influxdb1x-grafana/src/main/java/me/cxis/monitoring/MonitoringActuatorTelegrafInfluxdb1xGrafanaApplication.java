@@ -1,0 +1,12 @@
+package me.cxis.monitoring;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class MonitoringActuatorTelegrafInfluxdb1xGrafanaApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(MonitoringActuatorTelegrafInfluxdb1xGrafanaApplication.class, args);
+    }
+}

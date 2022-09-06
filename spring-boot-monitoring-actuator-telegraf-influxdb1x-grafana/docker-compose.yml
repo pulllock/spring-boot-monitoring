@@ -1,0 +1,48 @@
+version: "3.8"
+
+# 定义网络：local_net
+networks:
+  local_net:
+    name: local_net
+
+# 定义服务
+services:
+  # influxdb服务
+  influxdb:
+    image: influxdb:1.8
+    ports:
+      - 8086:8086
+    networks:
+      - local_net
+    environment:
+      - INFLUXDB_DB=telegraf
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=12345678
+      - INFLUXDB_USER=telegraf
+      - INFLUXDB_USER_PASSWORD=12345678
+
+  # telegraf服务
+  telegraf:
+    image: telegraf:latest
+    networks:
+      - local_net
+    depends_on:
+      - influxdb
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  # grafana服务
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    networks:
+      - local_net
+
+  # 示例项目服务
+  spring-boot-monitoring-actuator-telegraf-influxdb1x-grafana:
+    image: local_test/spring-boot-monitoring-actuator-telegraf-influxdb1x-grafana:1.0.0-SNAPSHOT
+    ports:
+        - 8080:8080
+    networks:
+      - local_net
