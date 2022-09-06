@@ -1,13 +1,112 @@
 # Spring-boot-monitoring
 
-Spring boot项目监控，作为一个示例项目，研究其可行性。使用[Spring initializr](https://start.spring.io)生成一个可运行的简单Spring boot项目，开启Actuator和Jolokia支持，使用Telegraf采集项目运行信息，InfluxDB时序数据库存储数据，Grafana展示数据。
+Spring boot项目监控，作为一个示例项目，研究其可行性。
 
 ![](grafana/sample.png)
 
 # 方案
 
-- `Spring Boot Actuator` + `Telegraf` + `Influxdb` + `Grafana`
+- `Spring Boot Actuator` + `Telegraf 2.x` + `Influxdb 2.x` + `Grafana`
 - `Spring Boot Actuator` + `Prometheus` + `Grafana`
+
+# Spring Boot Actuator + Telegraf 2.x + Influxdb 2.x + Grafana方案
+
+Spring boot项目，开启Actuator和Jolokia支持，使用Telegraf 2.x采集项目运行信息，InfluxDB 2.x时序数据库存储数据，Grafana展示数据。
+
+## 将当前项目打包为Docker镜像
+
+1. 在`spring-boot-monitoring-actuator-telegraf-influxdb-grafana`根目录下创建`Dockerfile`文件，文件内容如下：
+   
+   ```
+   FROM openjdk:8-jre-alpine
+   
+   RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+   apk update && \
+   mkdir -p /app
+   COPY target/spring-boot-monitoring-actuator-telegraf-influxdb-grafana-1.0.0-SNAPSHOT.jar app/spring-boot-monitoring-actuator-telegraf-influxdb-grafana.jar
+   EXPOSE 8080
+   ENTRYPOINT ["java", "-jar", "app/spring-boot-monitoring-actuator-telegraf-influxdb-grafana.jar"]
+   ```
+
+2. 将项目`spring-boot-monitoring-actuator-telegraf-influxdb-grafana`进行打包：`mvn clean package -Dmaven.test.skip=true`
+
+3. 创建应用的镜像，执行命令：`docker build -t local_test/spring-boot-monitoring-actuator-telegraf-influxdb-grafana:1.0.0-SNAPSHOT .`
+
+## 使用Docker启动Telegraf 2.x、Influxdb 2.x、Grafana以及示例项目
+
+使用docker compose安装`Telegraf 2.x`、`Influxdb 2.x`和`Grafana`：
+
+1. 先编写`docker-compose.yml`文件，内容参考下方的`docker-compose.yml`文件内容
+2. 启动`docker compose up -d`
+3. 访问grafana：`http://localhost:3000`
+4. 在grafana创建数据源，在Query Language中选择Flux，这样才可以设置Influxdb 2.x的信息
+5. 创建完数据源后，在Dashboards中选择Import，然后选择`spring-boot-monitoring-actuator-telegraf-influxdb-grafana/grafana/SpringBoot监控.json`文件进行导入
+
+## 怎样运行当前方案
+
+1. 克隆当前项目，进入`spring-boot-monitoring-actuator-telegraf-influxdb-grafana`目录下
+2. 将项目`spring-boot-monitoring-actuator-telegraf-influxdb-grafana`进行打包：`mvn clean package -Dmaven.test.skip=true`
+3. 创建应用的镜像，执行命令：`docker build -t local_test/spring-boot-monitoring-actuator-telegraf-influxdb-grafana:1.0.0-SNAPSHOT .`
+4. 启动：`docker compose up -d`
+5. 访问grafana：`http://localhost:3000`
+6. 在grafana创建数据源，在Query Language中选择Flux，这样才可以设置Influxdb 2.x的信息
+7. 创建完数据源后，在Dashboards中选择Import，然后选择`spring-boot-monitoring-actuator-telegraf-influxdb-grafana/grafana/SpringBoot监控.json`文件进行导入
+
+## `docker-compose.yml`文件内容
+
+grafana的默认用户名密码：`admin/admin`
+
+```yaml
+version: "3.8"
+
+# 定义网络：local_net
+networks:
+  local_net:
+    name: local_net
+
+# 定义服务
+services:
+  # influxdb服务
+  influxdb:
+    image: influxdb:latest
+    ports:
+      - 8086:8086
+    networks:
+      - local_net
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=12345678
+      - DOCKER_INFLUXDB_INIT_ORG=cxis
+      - DOCKER_INFLUXDB_INIT_BUCKET=cxis-bucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=12345678
+
+  # telegraf服务
+  telegraf:
+    image: telegraf:latest
+    networks:
+      - local_net
+    depends_on:
+      - influxdb
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+
+  # grafana服务
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    networks:
+      - local_net
+
+  # 示例项目服务
+  spring-boot-monitoring-actuator-telegraf-influxdb-grafana:
+    image: local_test/spring-boot-monitoring-actuator-telegraf-influxdb-grafana:1.0.0-SNAPSHOT
+    ports:
+        - 8080:8080
+    networks:
+      - local_net
+```
 
 # Spring Boot Actuator介绍
 
@@ -45,138 +144,3 @@ Spring boot项目监控，作为一个示例项目，研究其可行性。使用
 | `jolokia`    | 将JMX通过HTTP暴露出去，需要添加依赖`jolokia-core`                                                      | N/A     | No       |
 | `logfile`    | 如果`logging.file.name`或者`logging.file.path`设置了，则可以获取到日志文件内容，支持使用Http的请求头的`Range`来部分获取日志内容 | N/A     | No       |
 | `prometheus` | 支持将指标暴露为`Prometheus`可识别的格式，需要添加依赖`micrometer-registry-prometheus`                        | N/A     | No       |
-
-# Spring Boot Actuator + Telegraf + Influxdb + Grafana方案
-
-## 将当前项目打包为Docker镜像
-
-1. 在`spring-boot-monitoring-actuator-telegraf-influxdb-grafana`根目录下创建`Dockerfile`文件，文件内容如下：
-   
-   ```
-   FROM openjdk:8-jre-alpine
-   
-   RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
-   apk update && \
-   mkdir -p /app
-   COPY target/spring-boot-monitoring-actuator-telegraf-influxdb-grafana-1.0.0-SNAPSHOT.jar app/spring-boot-monitoring-actuator-telegraf-influxdb-grafana.jar
-   EXPOSE 8080
-   ENTRYPOINT ["java", "-jar", "app/spring-boot-monitoring-actuator-telegraf-influxdb-grafana.jar"]
-   ```
-
-2. 将项目`spring-boot-monitoring-actuator-telegraf-influxdb-grafana`进行打包：`mvn clean package -Dmaven.test.skip=true`
-
-3. 创建应用的镜像，执行命令：`docker build -t local_test/spring-boot-monitoring-actuator-telegraf-influxdb-grafana:1.0.0-SNAPSHOT .`
-
-## 使用Docker启动Telegraf、Influxdb、Grafana以及示例项目
-
-使用docker compose安装`Telegraf 2.x`、`Influxdb 2.x`和`Grafana`：
-
-1. 先编写`docker-compose.yml`文件，内容参考下方的`docker-compose.yml`文件内容
-2. 启动`docker compose up -d`
-3. 访问grafana：`http://localhost:3000`
-4. 在grafana创建数据源，在Query Language中选择Flux，这样才可以设置Influxdb 2.x的信息
-5. 创建完数据源后，在Dashboards中选择Import，然后选择SpringBoot监控.json文件进行导入
-
-## `docker-compose.yml`文件内容
-
-grafana的默认用户名密码：`admin/admin`
-
-```yaml
-
-```
-
-## 开始
-
-下面说明怎样运行此项目并看到效果。首先克隆此项目：
-
-```
-git clone https://github.com/dachengxi/spring-boot-monitoring.git
-```
-
-### 准备
-
-需要安装的列表
-
-- influxdb
-- telegraf
-- grafana
-
-### 安装
-
-```
-以上软件的安装步骤自行参考官方文档，这里不做重复。
-```
-
-### 配置
-
-telegraf：
-
-```
-vi /etc/telegraf/telegraf.conf
-```
-
-打开或者添加以下配置
-
-```
-[[inputs.jolokia]]
-    context = "/actuator/jolokia/read/"
-
-[[inputs.jolokia.servers]]
-     name = "spring-boot-monitoring-actuator-telegraf-influxdb-grafana"
-     host = "127.0.0.1"
-     port = "8080"
-
-[[inputs.jolokia.metrics]]
-     name = "heap_memory_usage"
-     mbean  = "java.lang:type=Memory"
-     attribute = "HeapMemoryUsage"
-
-[[inputs.jolokia.metrics]]
-     name = "thread_count"
-     mbean  = "java.lang:type=Threading"
-     attribute = "TotalStartedThreadCount,ThreadCount,DaemonThreadCount,PeakThreadCount"
-
-[[inputs.jolokia.metrics]]
-     name = "class_count"
-     mbean  = "java.lang:type=ClassLoading"
-     attribute = "LoadedClassCount,UnloadedClassCount,TotalLoadedClassCount"
-
-[[inputs.jolokia.metrics]]
-    name = "metrics"
-    mbean  = "org.springframework.boot:name=metricsEndpoint,type=Endpoint"
-    attribute = "Data"
-
-[[inputs.jolokia.metrics]]
-    name = "tomcat_max_threads"
-    mbean  = "Tomcat:name=\"http-nio-8080\",type=ThreadPool"
-    attribute = "maxThreads"
-
-[[inputs.jolokia.metrics]]
-    name = "tomcat_current_threads_busy"
-    mbean  = "Tomcat:name=\"http-nio-8080\",type=ThreadPool"
-    attribute = "currentThreadsBusy"
-```
-
-grafana：
-
-运行grafana，访问http://localhost:3000 ，选择导入Dashboard，导入的文件是项目中的grafana/Spring Boot监控.json文件
-
-### 运行
-
-将Spring Boot项目导入到IDEA中，运行项目！
-
-## 构建
-
-* [Maven](https://maven.apache.org/) - 依赖管理
-
-## 贡献
-
-暂无
-
-## 作者
-
-* **ChengXi** - ** - [dachengxi](https://github.com/dachengxi)
-
-## License
-
-This project is licensed under the MIT License！
