@@ -1,0 +1,26 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: spring-boot-monitoring-admin-client
+  boot:
+    admin:
+      client:
+        url: http://localhost:8000
+  jmx:
+    enabled: true
+management:
+  endpoints:
+    # 启用所有端口
+    enabled-by-default: true
+    web:
+      exposure:
+        # 暴露所有端口
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+    jolokia:
+      enabled: true
+      config:
+        debug: true

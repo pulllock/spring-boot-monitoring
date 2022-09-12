@@ -9,6 +9,7 @@ Spring boot项目监控，作为一个示例项目，研究其可行性。
 - `Spring Boot Actuator` + `Telegraf` + `Influxdb 1.x` + `Grafana`
 - `Spring Boot Actuator` + `Telegraf` + `Influxdb 2.x` + `Grafana`
 - `Spring Boot Actuator` + `Prometheus` + `Grafana`
+- `Spring Boot Actuator` + `Spring Boot Admin`，具体可参考`spring-boot-monitoring-admin`模块
 
 # Spring Boot Actuator + Telegraf + Influxdb 1.x + Grafana方案
 

@@ -11,6 +11,7 @@
         <module>spring-boot-monitoring-actuator-telegraf-influxdb-grafana</module>
         <module>spring-boot-monitoring-actuator-telegraf-influxdb1x-grafana</module>
         <module>spring-boot-monitoring-actuator-prometheus-grafana</module>
+        <module>spring-boot-monitoring-admin</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -25,6 +26,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <spring-boot.version>2.7.3</spring-boot.version>
+        <spring-boot-admin.version>2.7.4</spring-boot-admin.version>
     </properties>
 
     <dependencyManagement>
@@ -33,6 +35,14 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>de.codecentric</groupId>
+                <artifactId>spring-boot-admin-dependencies</artifactId>
+                <version>${spring-boot-admin.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
