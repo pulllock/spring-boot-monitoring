@@ -1,0 +1,34 @@
+version: "3.8"
+
+# 定义网络：local_net
+networks:
+  local_net:
+    name: local_net
+
+# 定义服务
+services:
+  # prometheus服务
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - 9090:9090
+    networks:
+      - local_net
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  # grafana服务
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - 3000:3000
+    networks:
+      - local_net
+
+  # 示例项目服务
+  spring-boot-monitoring-actuator-prometheus-grafana:
+    image: local_test/spring-boot-monitoring-actuator-prometheus-grafana:1.0.0-SNAPSHOT
+    ports:
+        - 8080:8080
+    networks:
+      - local_net

@@ -203,6 +203,90 @@ services:
       - local_net
 ```
 
+# Spring Boot Actuator + Prometheus + Grafana方案
+
+Spring boot项目，开启Actuator支持，使用Prometheus采集项目运行信息并存储数据，Grafana展示数据。
+
+## 将当前项目打包为Docker镜像
+
+1. 在`spring-boot-monitoring-actuator-prometheus-grafana`根目录下创建`Dockerfile`文件，文件内容如下：
+
+   ```
+   FROM openjdk:8-jre-alpine
+   
+   RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
+   apk update && \
+   mkdir -p /app
+   COPY target/spring-boot-monitoring-actuator-prometheus-grafana-1.0.0-SNAPSHOT.jar app/spring-boot-monitoring-actuator-prometheus-grafana.jar
+   EXPOSE 8080
+   ENTRYPOINT ["java", "-jar", "app/spring-boot-monitoring-actuator-prometheus-grafana.jar"]
+   ```
+
+2. 将项目`spring-boot-monitoring-actuator-prometheus-grafana`进行打包：`mvn clean package -Dmaven.test.skip=true`
+
+3. 创建应用的镜像，执行命令：`docker build -t local_test/spring-boot-monitoring-actuator-prometheus-grafana:1.0.0-SNAPSHOT .`
+
+## 使用Docker启动Prometheus、Grafana以及示例项目
+
+使用docker compose安装`Prometheus`和`Grafana`：
+
+1. 先编写`docker-compose.yml`文件，内容参考下方的`docker-compose.yml`文件内容
+2. 启动`docker compose up -d`
+3. 访问prometheus：`http://localhost:9090`
+3. 访问grafana：`http://localhost:3000`，grafana的默认用户名密码：`admin/admin`
+4. 在grafana创建数据源，选择Prometheus后填写信息即可
+5. 创建完数据源后，在Dashboards中选择Import，然后选择`spring-boot-monitoring-actuator-prometheus-grafana/grafana/SpringBoot监控.json`文件进行导入
+
+## 怎样运行当前方案
+
+1. 克隆当前项目，进入`spring-boot-monitoring-actuator-prometheus-grafana`目录下
+2. 将项目`spring-boot-monitoring-actuator-prometheus-grafana`进行打包：`mvn clean package -Dmaven.test.skip=true`
+3. 创建应用的镜像，执行命令：`docker build -t local_test/spring-boot-monitoring-actuator-prometheus-grafana:1.0.0-SNAPSHOT .`
+4. 启动：`docker compose up -d`
+5. 访问prometheus：`http://localhost:9090`
+5. 访问grafana：`http://localhost:3000`，grafana的默认用户名密码：`admin/admin`
+6. 在grafana创建数据源，选择Prometheus后填写信息即可
+7. 创建完数据源后，在Dashboards中选择Import，然后选择`spring-boot-monitoring-actuator-prometheus-grafana/grafana/SpringBoot监控.json`文件进行导入
+
+## `docker-compose.yml`文件内容
+
+```yaml
+version: "3.8"
+
+# 定义网络：local_net
+networks:
+   local_net:
+      name: local_net
+
+# 定义服务
+services:
+   # prometheus服务
+   prometheus:
+      image: prom/prometheus:latest
+      ports:
+         - 9090:9090
+      networks:
+         - local_net
+      volumes:
+         - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+   # grafana服务
+   grafana:
+      image: grafana/grafana:latest
+      ports:
+         - 3000:3000
+      networks:
+         - local_net
+
+   # 示例项目服务
+   spring-boot-monitoring-actuator-prometheus-grafana:
+      image: local_test/spring-boot-monitoring-actuator-prometheus-grafana:1.0.0-SNAPSHOT
+      ports:
+         - 8080:8080
+      networks:
+         - local_net
+```
+
 # Spring Boot Actuator介绍
 
 ## 可用的endpoints
