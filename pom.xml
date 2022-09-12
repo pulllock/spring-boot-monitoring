@@ -12,6 +12,7 @@
         <module>spring-boot-monitoring-actuator-telegraf-influxdb1x-grafana</module>
         <module>spring-boot-monitoring-actuator-prometheus-grafana</module>
         <module>spring-boot-monitoring-admin</module>
+        <module>spring-boot-monitoring-skywalking</module>
     </modules>
     <packaging>pom</packaging>
 
