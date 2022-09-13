@@ -13,6 +13,7 @@
         <module>spring-boot-monitoring-actuator-prometheus-grafana</module>
         <module>spring-boot-monitoring-admin</module>
         <module>spring-boot-monitoring-skywalking</module>
+        <module>spring-boot-monitoring-sleuth-zipkin</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -28,6 +29,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <spring-boot.version>2.7.3</spring-boot.version>
         <spring-boot-admin.version>2.7.4</spring-boot-admin.version>
+        <spring-cloud.version>2021.0.4</spring-cloud.version>
     </properties>
 
     <dependencyManagement>
@@ -44,6 +46,14 @@
                 <groupId>de.codecentric</groupId>
                 <artifactId>spring-boot-admin-dependencies</artifactId>
                 <version>${spring-boot-admin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

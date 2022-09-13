@@ -1,0 +1,49 @@
+version: "3.8"
+
+# 定义网络：local_net
+networks:
+  local_net:
+    name: local_net
+
+# 定义服务
+services:
+  # es7服务
+  es7:
+    image: elasticsearch:7.17.5
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - local_net
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    environment:
+      - discovery.type=single-node
+
+  # zipkin服务
+  zipkin:
+    image: openzipkin/zipkin:2.23.18
+    ports:
+      - 9411:9411
+    networks:
+      - local_net
+    depends_on:
+      es7:
+        condition: service_healthy
+    environment:
+      - STORAGE_TYPE=elasticsearch
+      - ES_HOSTS=es7:9200
+
+  # 示例项目服务
+  spring-boot-monitoring-sleuth-zipkin:
+    image: local_test/spring-boot-monitoring-sleuth-zipkin:1.0.0-SNAPSHOT
+    ports:
+        - 8080:8080
+    networks:
+      - local_net
+    depends_on:
+      - zipkin
