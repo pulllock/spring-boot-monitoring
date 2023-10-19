@@ -132,7 +132,7 @@
           "measurement": "jolokia",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"cxis-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"class_count_LoadedClassCount\"\n  )",
+          "query": "from(bucket: \"pullock-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"class_count_LoadedClassCount\"\n  )",
           "refId": "Load Class Count",
           "resultFormat": "time_series",
           "select": [
@@ -175,7 +175,7 @@
           "measurement": "jolokia",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"cxis-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"class_count_TotalLoadedClassCount\"\n  )",
+          "query": "from(bucket: \"pullock-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"class_count_TotalLoadedClassCount\"\n  )",
           "refId": "Total Loaded Class Count",
           "resultFormat": "time_series",
           "select": [
@@ -200,7 +200,7 @@
             "uid": "fTAe5lWVk"
           },
           "hide": false,
-          "query": "from(bucket: \"cxis-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"class_count_UnloadedClassCount\"\n  )",
+          "query": "from(bucket: \"pullock-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"class_count_UnloadedClassCount\"\n  )",
           "refId": "Unloaded Class Count"
         }
       ],
@@ -312,7 +312,7 @@
           "measurement": "jolokia",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"cxis-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"heap_memory_usage_used\"\n  )",
+          "query": "from(bucket: \"pullock-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"jolokia\" and\n    r._field == \"heap_memory_usage_used\"\n  )",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -426,7 +426,7 @@
           "measurement": "cpu",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "// v.windowPeriod is a variable referring to the current optimized window period (currently: $interval)\nfrom(bucket: \"cxis-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cpu\" or r[\"_measurement\"] =~ /^.*?regex.*$/)\n  |> filter(fn: (r) => r[\"_field\"] == \"usage_system\" or r[\"_field\"] =~ /^.*?regex.*$/)\n  |> filter(fn: (r) => r[\"cpu\"] == \"cpu-total\" or r[\"_field\"] =~ /^.*?regex.*$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
+          "query": "// v.windowPeriod is a variable referring to the current optimized window period (currently: $interval)\nfrom(bucket: \"pullock-bucket\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r[\"_measurement\"] == \"cpu\" or r[\"_measurement\"] =~ /^.*?regex.*$/)\n  |> filter(fn: (r) => r[\"_field\"] == \"usage_system\" or r[\"_field\"] =~ /^.*?regex.*$/)\n  |> filter(fn: (r) => r[\"cpu\"] == \"cpu-total\" or r[\"_field\"] =~ /^.*?regex.*$/)\n  |> aggregateWindow(every: v.windowPeriod, fn: mean)",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -554,7 +554,7 @@
           "measurement": "mem",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "from(bucket: \"cxis-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"mem\" and\n    r._field == \"used\"\n  )",
+          "query": "from(bucket: \"pullock-bucket\")\n  |> range(start: v.timeRangeStart, stop:v.timeRangeStop)\n  |> filter(fn: (r) =>\n    r._measurement == \"mem\" and\n    r._field == \"used\"\n  )",
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
